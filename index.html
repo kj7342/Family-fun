@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15152b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Family Fun</title>
+<style>
+:root{--bg:#101225;--panel:#1c2040;--panel2:#272d52;--ink:#fff;--muted:#c5c9e4;--pink:#ff6fae;--blue:#79d8ff;--yellow:#ffe27a;--green:#83e3b0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#29305b 0,#101225 60%);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button{font:inherit;cursor:pointer;border:0;border-radius:15px;padding:13px 16px;background:linear-gradient(135deg,#ff78b5,#ff9a70);color:#24152c;font-weight:800;box-shadow:0 4px 0 #9a4774}button:active{transform:translateY(2px);box-shadow:0 2px 0 #9a4774}.secondary{background:var(--panel2);color:white;box-shadow:none;border:1px solid #414873}.wrap{max-width:760px;margin:auto;padding:20px 16px 48px}.hero{text-align:center;padding:28px 8px 18px}.logo{font-size:48px}.hero h1{font-size:clamp(2rem,8vw,3.4rem);margin:0;background:linear-gradient(90deg,#ff8ec4,#ffe27a,#79d8ff);background-clip:text;color:transparent}.hero p{color:var(--muted);margin:8px 0 0}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.card{background:linear-gradient(145deg,#272d52,#1a1e3b);border:1px solid #414873;border-radius:22px;padding:20px 14px;text-align:center;min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}.card .emoji{font-size:38px}.card strong{font-size:18px}.card small{color:var(--muted)}.screen{display:none;background:#1b1f3e;border:1px solid #414873;border-radius:24px;padding:20px;margin-top:18px}.screen.active{display:block}.topline{display:flex;align-items:center;gap:12px;margin-bottom:16px}.topline h2{margin:0;flex:1}.prompt{font-size:clamp(1.3rem,5vw,2rem);font-weight:800;line-height:1.3;text-align:center;padding:18px 4px}.answers{display:grid;gap:10px}.answers button{width:100%;background:#30375f;color:white;box-shadow:none;border:1px solid #515a8b}.answers button.good{background:#226b52;border-color:#83e3b0}.answers button.bad{background:#803a56;border-color:#ff8cb6}.feedback{text-align:center;min-height:32px;color:var(--yellow);font-weight:700;margin:12px 0}.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.row button{flex:1;min-width:120px}.score{text-align:center;color:var(--blue);font-weight:800}.memory{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;max-width:440px;margin:16px auto}.tile{aspect-ratio:1;background:#30375f;border:1px solid #566092;border-radius:15px;color:white;font-size:clamp(1.6rem,8vw,2.5rem);box-shadow:none;padding:0}.tile.open{background:#fff;color:#202342}.tile.matched{background:#245d4a;border-color:#83e3b0}.input{width:100%;padding:14px;border-radius:12px;border:1px solid #69739e;background:#11152c;color:white;font:inherit;margin:8px 0}.foot{text-align:center;color:#9299bf;font-size:12px;margin-top:26px}@media(min-width:600px){.cards{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="hero"><div class="logo">🎉🎲🧠</div><h1>Family Fun</h1><p>Pick a game. Challenge your people. Have a blast!</p></header>
+<section id="home" class="cards">
+<button class="card" data-game="jokes"><span class="emoji">😂</span><strong>Joke Time</strong><small>Take turns telling jokes</small></button>
+<button class="card" data-game="riddles"><span class="emoji">🕵️</span><strong>Riddles</strong><small>Think before you peek!</small></button>
+<button class="card" data-game="trivia"><span class="emoji">🌎</span><strong>Trivia Challenge</strong><small>Test your random knowledge</small></button>
+<button class="card" data-game="memory"><span class="emoji">🧩</span><strong>Memory Match</strong><small>Find all the matching pairs</small></button>
+<button class="card" data-game="would"><span class="emoji">🤔</span><strong>Would You Rather?</strong><small>Pick your side and explain why</small></button>
+<button class="card" data-game="charades"><span class="emoji">🎭</span><strong>Charades</strong><small>Act it out, no talking!</small></button>
+</section>
+<section id="play" class="screen"><div class="topline"><button class="secondary" id="back">← Home</button><h2 id="gameTitle">Game</h2><button class="secondary" id="next">Next</button></div><div id="gameArea"></div></section>
+<footer class="foot">Made for game night ❤️</footer></main>
+<script>
+const $=s=>document.querySelector(s);let game='',idx=0,score=0,answered=false,deck=[],first=null,lock=false,matches=0;
+const data={
+jokes:[
+["Why did the math book look sad?","Because it had too many problems."],
+["What do you call a bear with no teeth?","A gummy bear."],
+["Why can't your nose be 12 inches long?","Because then it would be a foot."],
+["What do you call cheese that isn't yours?","Nacho cheese."],
+["Why did the bicycle fall over?","It was two-tired."],
+["What has ears but cannot hear?","A cornfield."]
+],
+riddles:[
+["I have keys but no locks. I have space but no room. You can enter, but you can't go outside. What am I?","A keyboard."],
+["What gets wetter the more it dries?","A towel."],
+["What has a face and two hands but no arms or legs?","A clock."],
+["The more you take, the more you leave behind. What are they?","Footsteps."],
+["What has one eye but cannot see?","A needle."],
+["What goes up but never comes down?","Your age."]
+],
+trivia:[
+["Which planet is known as the Red Planet?",["Venus","Mars","Jupiter","Mercury"],1],
+["How many sides does a hexagon have?",["Five","Six","Seven","Eight"],1],
+["What is the largest ocean on Earth?",["Atlantic","Indian","Arctic","Pacific"],3],
+["Which animal is the tallest in the world?",["Elephant","Giraffe","Ostrich","Camel"],1],
+["How many colors are traditionally in a rainbow?",["Five","Six","Seven","Eight"],2],
+["What is the fastest land animal?",["Lion","Horse","Cheetah","Gazelle"],2],
+["What is the main ingredient in guacamole?",["Peas","Avocado","Cucumber","Lime"],1],
+["Which instrument has 88 keys?",["Guitar","Violin","Piano","Harp"],2]
+],
+would:[
+["Would you rather be able to fly or become invisible?"],
+["Would you rather explore outer space or the deepest ocean?"],
+["Would you rather have a pet dragon or a pet dinosaur?"],
+["Would you rather eat only pizza for a week or only tacos for a week?"],
+["Would you rather be able to talk to animals or speak every human language?"],
+["Would you rather live in a treehouse or a castle?"]
+],
+charades:["A penguin walking","A robot dancing","Brushing your teeth","A sneaky cat","A basketball player","A T-rex trying to clap","A person riding a roller coaster","A chef making pancakes","A superhero landing","A baby learning to walk"]
+};
+function show(g){game=g;idx=0;score=0;answered=false;$("#home").style.display="none";$("#play").classList.add("active");$("#gameTitle").textContent=({jokes:"😂 Joke Time",riddles:"🕵️ Riddles",trivia:"🌎 Trivia",memory:"🧩 Memory Match",would:"🤔 Would You Rather?",charades:"🎭 Charades"})[g];if(g==="memory")startMemory();else render();}
+function render(){let a=$("#gameArea");if(game==="jokes"||game==="riddles"){let item=data[game][idx%data[game].length];a.innerHTML='<div class="score">'+(idx+1)+' / '+data[game].length+'</div><div class="prompt">'+item[0]+'</div><div class="feedback" id="reveal">Answer stays hidden until you are ready.</div><div class="row"><button class="secondary" id="peek">Reveal answer</button><button id="advance">Next one</button></div>';$("#peek").onclick=()=>{$("#reveal").textContent=item[1];$("#peek").disabled=true;};$("#advance").onclick=()=>{idx++;render();};}
+else if(game==="trivia"){let q=data.trivia[idx%data.trivia.length];a.innerHTML='<div class="score">Score: '+score+' · Question '+(idx+1)+' / '+data.trivia.length+'</div><div class="prompt">'+q[0]+'</div><div class="answers">'+q[1].map((x,i)=>'<button data-i="'+i+'">'+x+'</button>').join('')+'</div><div class="feedback" id="feedback"></div><div class="row"><button id="advance" disabled>Next question</button></div>';a.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{if(answered)return;answered=true;let ok=+b.dataset.i===q[2];if(ok)score++;a.querySelectorAll('[data-i]').forEach((x,i)=>{x.disabled=true;if(i===q[2])x.classList.add('good');else if(x===b)x.classList.add('bad');});$("#feedback").textContent=ok?"Correct! 🎉":"Not quite — the answer is "+q[1][q[2]]+".";$("#advance").disabled=false;});$("#advance").onclick=()=>{idx++;if(idx>=data.trivia.length){a.innerHTML='<div class="prompt">Final score: '+score+' / '+data.trivia.length+' 🏆</div><div class="row"><button id="again">Play again</button></div>';$("#again").onclick=()=>{idx=0;score=0;render();};}else render();};}
+else if(game==="would"){a.innerHTML='<div class="score">Question '+(idx+1)+' / '+data.would.length+'</div><div class="prompt">'+data.would[idx%data.would.length][0]+'</div><p style="text-align:center;color:var(--muted)">Everyone chooses a side, then tell the group why!</p><div class="row"><button id="advance">Next question</button></div>';$("#advance").onclick=()=>{idx++;render();};}
+else if(game==="charades"){a.innerHTML='<div class="score">Charades card '+(idx+1)+' / '+data.charades.length+'</div><div class="prompt" id="charade">Ready for your action?</div><div class="row"><button id="reveal">Show my action</button><button id="advance">Next card</button></div><p style="text-align:center;color:var(--muted)">Act it out. No talking or pointing at objects!</p>';$("#reveal").onclick=()=>{$("#charade").textContent=data.charades[idx%data.charades.length];};$("#advance").onclick=()=>{idx++;render();};}}
+function startMemory(){let icons=["🐸","🚀","🍕","🦄","⚽","🐼","🎸","🍩"];deck=[...icons,...icons].sort(()=>Math.random()-.5).map((x,i)=>({x,id:i,open:false,matched:false}));first=null;lock=false;matches=0;drawMemory();}
+function drawMemory(){let a=$("#gameArea");a.innerHTML='<div class="score">Pairs found: '+matches+' / 8</div><div class="memory">'+deck.map((c,i)=>'<button class="tile '+(c.matched?'matched ':'')+(c.open?'open':'')+'" data-card="'+i+'">'+(c.open||c.matched?c.x:'❔')+'</button>').join('')+'</div><div class="feedback" id="memFeedback">'+(matches===8?'You did it! Memory champion! 🏆':'Find two matching cards.')+'</div><div class="row"><button class="secondary" id="shuffle">Restart game</button></div>';a.querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>flip(+b.dataset.card));$("#shuffle").onclick=startMemory;}
+function flip(i){let c=deck[i];if(lock||c.open||c.matched)return;c.open=true;if(first===null){first=i;drawMemory();return;}drawMemory();if(deck[first].x===c.x){deck[first].matched=true;c.matched=true;matches++;first=null;drawMemory();}else{lock=true;let old=first;first=null;setTimeout(()=>{deck[old].open=false;c.open=false;lock=false;drawMemory();},850);}}
+$("#back").onclick=()=>{$("#play").classList.remove("active");$("#home").style.display="grid";game='';};$("#next").onclick=()=>{if(game==="memory")startMemory();else{idx++;render();}};
+document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>show(b.dataset.game));
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
