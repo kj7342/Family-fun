@@ -1,0 +1,9 @@
+{
+  "name": "Family Fun",
+  "short_name": "Family Fun",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101225",
+  "theme_color": "#15152b",
+  "icons": []
+}
