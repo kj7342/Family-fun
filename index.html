@@ -96,17 +96,79 @@ function renderCrazy(){let a=$("#gameArea");a.innerHTML='<div class="score">Your
 function playCrazy(i){let c=crazyYou[i];if(c.r!=="8"&&c.s!==crazySuit&&c.r!==crazyTop.r){crazyMsg='That card does not match. Try another.';renderCrazy();return;}crazyTop=crazyYou.splice(i,1)[0];crazySuit=crazyTop.r==="8"?prompt('Choose a suit: ♠, ♥, ♦, or ♣','♠')||'♠':crazyTop.s;if(!suits.includes(crazySuit))crazySuit='♠';if(!crazyYou.length){crazyMsg='You win Crazy Eights! 🏆';renderCrazy();return;}crazyMsg='You played '+c.r+c.s+'. Computer’s turn.';cpuCrazy();}
 function cpuCrazy(){let i=crazyCpu.findIndex(c=>c.r==="8"||c.s===crazySuit||c.r===crazyTop.r);if(i>=0){let c=crazyCpu.splice(i,1)[0];crazyTop=c;crazySuit=c.r==="8"?suits[Math.floor(Math.random()*4)]:c.s;crazyMsg+=' Computer played '+c.r+c.s+'.';if(!crazyCpu.length)crazyMsg+=' Computer wins.';}else if(crazyPile.length){crazyCpu.push(crazyPile.pop());crazyMsg+=' Computer drew a card.';}renderCrazy();}
 
-let kingdomPlayers=[],kingdomTiles=[],kingdomTurn=0,kingdomRound=0,kingdomRolled=false,kingdomMsg="";
+let kingdomPlayers=[],kingdomTiles=[],kingdomTurn=0,kingdomRound=0,kingdomRolled=false,kingdomMsg="",kingdomBusy=false;
 const resources=["wood","brick","wheat","sheep","ore"],resourceEmoji={wood:"🌲",brick:"🧱",wheat:"🌾",sheep:"🐑",ore:"⛰️"},buildCosts={road:{wood:1,brick:1},settlement:{wood:1,brick:1,wheat:1,sheep:1},city:{wheat:2,ore:3}};
-function startKingdom(){let n=+(prompt('How many players? Choose 2, 3, or 4.','2')||2);n=Math.max(2,Math.min(4,n));kingdomPlayers=Array.from({length:n},(_,i)=>({name:'Player '+(i+1),res:{wood:2,brick:2,wheat:2,sheep:2,ore:1},points:1,settlements:1,cities:0,roads:0}));let bag=[...resources,...resources,...resources,...resources];kingdomTiles=Array.from({length:9},()=>({res:bag.splice(Math.floor(Math.random()*bag.length),1)[0],num:2+Math.floor(Math.random()*11)}));kingdomTurn=0;kingdomRound=1;kingdomRolled=false;kingdomMsg='Roll the dice to collect resources, then build.';renderKingdom();}
-function renderKingdom(){let p=kingdomPlayers[kingdomTurn],a=$("#gameArea");a.innerHTML='<div class="score">Round '+kingdomRound+' · '+p.name+'’s turn · '+p.points+' points (first to 7 wins)</div><div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">'+kingdomTiles.map(t=>'<div class="card" style="min-height:76px;padding:8px"><strong>'+resourceEmoji[t.res]+' '+t.res+'</strong><small>Roll '+t.num+'</small></div>').join('')+'</div><div class="prompt">Your resources</div><div class="row">'+resources.map(r=>'<span>'+resourceEmoji[r]+' '+p.res[r]+'</span>').join(' · ')+'</div><div class="feedback" id="kingMsg">'+kingdomMsg+'</div><div class="row"><button id="rollKing" '+(kingdomRolled?'disabled':'')+'>🎲 Roll dice</button></div><div class="row"><button class="secondary" id="roadKing">Build road (🌲1 🧱1)</button><button class="secondary" id="settleKing">Settlement (1 each)</button><button class="secondary" id="cityKing">City (🌾2 ⛰️3)</button></div><div class="row"><button class="secondary" id="endKing">End turn →</button></div><p style="color:var(--muted);text-align:center">A quick, original Catan-inspired resource game: roll two dice, collect matching resources, then build. Settlement = 1 point; city upgrade = +1 point. First player to 7 wins.</p>';
-$("#rollKing").onclick=()=>{if(kingdomRolled)return;let roll=1+Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6),gained={};kingdomTiles.forEach(t=>{if(t.num===roll){p.res[t.res]++;gained[t.res]=(gained[t.res]||0)+1;}});kingdomRolled=true;kingdomMsg='You rolled '+roll+'. '+(Object.keys(gained).length?'Collected: '+Object.entries(gained).map(([k,v])=>v+' '+k).join(', '):'No matching tiles this time.');renderKingdom();};
-function pay(cost){if(!Object.entries(cost).every(([r,n])=>p.res[r]>=n))return false;Object.entries(cost).forEach(([r,n])=>p.res[r]-=n);return true;}
-function buildKing(cost,success){if(!kingdomRolled){kingdomMsg='Roll the dice before building.';renderKingdom();return;}if(pay(cost)){success();kingdomMsg=p.points>=7?p.name+' reaches 7 points and wins! 🏆':'Built successfully!';}else kingdomMsg='Not enough resources for that build.';renderKingdom();}
-$("#roadKing").onclick=()=>buildKing(buildCosts.road,()=>{p.roads++;});
-$("#settleKing").onclick=()=>buildKing(buildCosts.settlement,()=>{p.points++;p.settlements++;});
-$("#cityKing").onclick=()=>{if(!kingdomRolled){kingdomMsg="Roll the dice before building.";renderKingdom();return;}if(p.settlements<=p.cities){kingdomMsg="You need an unupgraded settlement first.";renderKingdom();return;}if(pay(buildCosts.city)){p.cities++;p.points++;kingdomMsg=p.points>=7?p.name+" reaches 7 points and wins! 🏆":"City upgraded! +1 point.";}else kingdomMsg="Not enough resources for a city.";renderKingdom();};
-$("#endKing").onclick=()=>{if(p.points>=7){kingdomMsg=p.name+' wins the game! 🏆';renderKingdom();return;}kingdomTurn=(kingdomTurn+1)%kingdomPlayers.length;if(kingdomTurn===0)kingdomRound++;kingdomRolled=false;kingdomMsg='Next player: roll the dice to begin your turn.';renderKingdom();};}
+function startKingdom(){
+ let humans=Math.max(1,Math.min(4,+(prompt("How many human players? (1–4)","1")||1)));
+ let cpus=Math.max(0,Math.min(4-humans,+(prompt("How many computer players? (0–"+(4-humans)+")",String(Math.max(1,3-humans)))||0)));
+ if(humans+cpus<2){cpus=1;}
+ kingdomPlayers=Array.from({length:humans+cpus},(_,i)=>({name:i<humans?"Player "+(i+1):"CPU "+(i-humans+1),cpu:i>=humans,res:{wood:2,brick:2,wheat:2,sheep:2,ore:1},points:1,settlements:1,cities:0,roads:0}));
+ let bag=[...resources,...resources,...resources,...resources,...resources,...resources];
+ kingdomTiles=Array.from({length:9},()=>({res:bag.splice(Math.floor(Math.random()*bag.length),1)[0],num:2+Math.floor(Math.random()*11)}));
+ kingdomTurn=0;kingdomRound=1;kingdomRolled=false;kingdomBusy=false;kingdomMsg="Roll the dice to collect resources, then build.";renderKingdom();
+}
+function renderKingdom(){
+ let p=kingdomPlayers[kingdomTurn],a=$("#gameArea");
+ a.innerHTML='<div class="score">Round '+kingdomRound+' · '+p.name+(p.cpu?' 🤖':'')+'’s turn · '+p.points+' points (first to 7 wins)</div>'+
+ '<div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">'+kingdomTiles.map(t=>'<div class="card" style="min-height:76px;padding:8px"><strong>'+resourceEmoji[t.res]+' '+t.res+'</strong><small>Roll '+t.num+'</small></div>').join('')+'</div>'+
+ '<div class="prompt">Players</div><div class="answers">'+kingdomPlayers.map((x,i)=>'<div class="card" style="min-height:55px;padding:8px;border-color:'+(i===kingdomTurn?'#ffe27a':'#414873')+'"><strong>'+(x.cpu?'🤖 ':'👤 ')+x.name+'</strong><small>'+x.points+' points · '+x.settlements+' settlements · '+x.cities+' cities</small></div>').join('')+'</div>'+
+ '<div class="prompt">Your resources</div><div class="row">'+resources.map(r=>'<span>'+resourceEmoji[r]+' '+p.res[r]+'</span>').join(' · ')+'</div>'+
+ '<div class="feedback" id="kingMsg">'+kingdomMsg+'</div><div class="row"><button id="rollKing" '+(kingdomRolled||p.cpu?'disabled':'')+'>🎲 Roll dice</button><button class="secondary" id="tradeKing" '+(p.cpu?'disabled':'')+'>Trade 4:1 with bank</button></div>'+
+ '<div class="row"><button class="secondary" id="roadKing" '+(p.cpu?'disabled':'')+'>Build road (🌲1 🧱1)</button><button class="secondary" id="settleKing" '+(p.cpu?'disabled':'')+'>Settlement (1 each)</button><button class="secondary" id="cityKing" '+(p.cpu?'disabled':'')+'>City (🌾2 ⛰️3)</button></div>'+
+ '<div class="row"><button class="secondary" id="endKing" '+(p.cpu?'disabled':'')+'>End turn →</button><button class="secondary" id="newKing">New game</button></div>'+
+ '<p style="color:var(--muted);text-align:center">Original Catan-inspired game: roll two dice, collect resources from matching tiles, trade 4 of one resource for 1 of another, and build. Roads cost 🌲1 🧱1; settlements cost one of each basic resource; cities cost 🌾2 ⛰️3. First to 7 points wins. CPU players take their own turns.</p>';
+ $("#rollKing").onclick=rollKingTurn;$("#tradeKing").onclick=tradeKing;$("#roadKing").onclick=()=>buildKing("road");$("#settleKing").onclick=()=>buildKing("settlement");$("#cityKing").onclick=()=>buildKing("city");$("#endKing").onclick=endKingTurn;$("#newKing").onclick=startKingdom;
+ if(p.cpu&&!kingdomBusy){kingdomBusy=true;setTimeout(cpuKingTurn,650);}
+}
+function rollKingTurn(){
+ if(kingdomRolled||kingdomPlayers[kingdomTurn].cpu)return;
+ let p=kingdomPlayers[kingdomTurn],roll=1+Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6),gained={};
+ kingdomTiles.forEach(t=>{if(t.num===roll){p.res[t.res]++;gained[t.res]=(gained[t.res]||0)+1;}});
+ kingdomRolled=true;kingdomMsg="You rolled "+roll+". "+(Object.keys(gained).length?"Collected: "+Object.entries(gained).map(([k,v])=>v+" "+k).join(", "):"No matching tiles this time.");renderKingdom();
+}
+function canPay(p,cost){return Object.entries(cost).every(([r,n])=>p.res[r]>=n);}
+function payKing(p,cost){if(!canPay(p,cost))return false;Object.entries(cost).forEach(([r,n])=>p.res[r]-=n);return true;}
+function buildKing(type){
+ let p=kingdomPlayers[kingdomTurn];if(!kingdomRolled||p.cpu)return;
+ if(type==="city"&&p.settlements<=p.cities){kingdomMsg="You need an unupgraded settlement before building a city.";renderKingdom();return;}
+ if(!payKing(p,buildCosts[type])){kingdomMsg="Not enough resources for that build.";renderKingdom();return;}
+ if(type==="road"){p.roads++;kingdomMsg="Road built!";}
+ if(type==="settlement"){p.settlements++;p.points++;kingdomMsg="Settlement built! +1 point.";}
+ if(type==="city"){p.cities++;p.points++;kingdomMsg="City upgraded! +1 point.";}
+ if(p.points>=7){kingdomMsg=p.name+" wins the game! 🏆";renderKingdom();return;}
+ renderKingdom();
+}
+function tradeKing(){
+ let p=kingdomPlayers[kingdomTurn];if(!kingdomRolled||p.cpu)return;
+ let give=prompt("Which resource do you have 4 of and want to trade? wood, brick, wheat, sheep, ore");
+ if(!resources.includes(give)||p.res[give]<4){kingdomMsg="You need at least 4 of one resource to trade.";renderKingdom();return;}
+ let get=prompt("Which resource do you want in return? wood, brick, wheat, sheep, ore");
+ if(!resources.includes(get)||get===give){kingdomMsg="Choose a different resource.";renderKingdom();return;}
+ p.res[give]-=4;p.res[get]++;kingdomMsg="Traded 4 "+give+" for 1 "+get+".";renderKingdom();
+}
+function cpuKingTurn(){
+ let p=kingdomPlayers[kingdomTurn];if(!p||!p.cpu)return;
+ let roll=1+Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6),gained={};
+ kingdomTiles.forEach(t=>{if(t.num===roll){p.res[t.res]++;gained[t.res]=(gained[t.res]||0)+1;}});
+ let actions=[];
+ for(let step=0;step<3;step++){
+  if(p.settlements>p.cities&&canPay(p,buildCosts.city)){payKing(p,buildCosts.city);p.cities++;p.points++;actions.push("upgraded a city");continue;}
+  if(canPay(p,buildCosts.settlement)){payKing(p,buildCosts.settlement);p.settlements++;p.points++;actions.push("built a settlement");continue;}
+  if(canPay(p,buildCosts.road)){payKing(p,buildCosts.road);p.roads++;actions.push("built a road");continue;}
+  let deficit=Object.keys(buildCosts.settlement).find(r=>p.res[r]===0);
+  let surplus=resources.find(r=>r!==deficit&&p.res[r]>=4);
+  if(deficit&&surplus){p.res[surplus]-=4;p.res[deficit]++;actions.push("traded with the bank");}
+  else break;
+ }
+ kingdomMsg="🤖 "+p.name+" rolled "+roll+(actions.length?". It "+actions.join(", "):" and gathered resources.")+".";
+ if(p.points>=7){kingdomMsg+=" "+p.name+" wins the game! 🏆";kingdomBusy=false;renderKingdom();return;}
+ kingdomBusy=false;endKingTurn(true);
+}
+function endKingTurn(fromCpu){
+ let p=kingdomPlayers[kingdomTurn];if(p.points>=7){kingdomMsg=p.name+" wins the game! 🏆";renderKingdom();return;}
+ kingdomTurn=(kingdomTurn+1)%kingdomPlayers.length;if(kingdomTurn===0)kingdomRound++;
+ kingdomRolled=false;kingdomMsg=fromCpu?kingdomMsg+" Next up: "+kingdomPlayers[kingdomTurn].name+".":"Next player: roll the dice to begin your turn.";renderKingdom();
+}
 
 $("#back").onclick=()=>{$("#play").classList.remove("active");$("#home").style.display="grid";game='';};$("#next").onclick=()=>{if(game==="memory")startMemory();else{idx++;render();}};
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>show(b.dataset.game));
