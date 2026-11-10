@@ -110,10 +110,10 @@ function startKingdom(){
 function renderKingdom(){
  let p=kingdomPlayers[kingdomTurn],a=$("#gameArea");
  a.innerHTML='<div class="score">Round '+kingdomRound+' · '+p.name+(p.cpu?' 🤖':'')+'’s turn · '+p.points+' points (first to 7 wins)</div>'+
- '<div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">'+kingdomTiles.map(t=>'<div class="card" style="min-height:76px;padding:8px"><strong>'+resourceEmoji[t.res]+' '+t.res+'</strong><small>Roll '+t.num+'</small></div>').join('')+'</div>'+
+ '<div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">'+kingdomTiles.map(t=>'<div class="card" style="min-height:86px;padding:14px 5px;clip-path:polygon(25% 5%,75% 5%,100% 50%,75% 95%,25% 95%,0 50%)"><strong>'+resourceEmoji[t.res]+' '+t.res+'</strong><small>Roll '+t.num+'</small></div>').join('')+'</div>'+
  '<div class="prompt">Players</div><div class="answers">'+kingdomPlayers.map((x,i)=>'<div class="card" style="min-height:55px;padding:8px;border-color:'+(i===kingdomTurn?'#ffe27a':'#414873')+'"><strong>'+(x.cpu?'🤖 ':'👤 ')+x.name+'</strong><small>'+x.points+' points · '+x.settlements+' settlements · '+x.cities+' cities</small></div>').join('')+'</div>'+
  '<div class="prompt">Your resources</div><div class="row">'+resources.map(r=>'<span>'+resourceEmoji[r]+' '+p.res[r]+'</span>').join(' · ')+'</div>'+
- '<div class="feedback" id="kingMsg">'+kingdomMsg+'</div><div class="row"><button id="rollKing" '+(kingdomRolled||p.cpu?'disabled':'')+'>🎲 Roll dice</button><button class="secondary" id="tradeKing" '+(p.cpu?'disabled':'')+'>Trade 4:1 with bank</button></div>'+
+ '<div class="feedback" id="kingMsg">'+kingdomMsg+'</div><div class="row"><button id="rollKing" '+(kingdomRolled||p.cpu?'disabled':'')+'>🎲 Roll dice</button><button class="secondary" id="tradeKing" '+(p.cpu?'disabled':'')+'>Trade resources</button></div>'+
  '<div class="row"><button class="secondary" id="roadKing" '+(p.cpu?'disabled':'')+'>Build road (🌲1 🧱1)</button><button class="secondary" id="settleKing" '+(p.cpu?'disabled':'')+'>Settlement (1 each)</button><button class="secondary" id="cityKing" '+(p.cpu?'disabled':'')+'>City (🌾2 ⛰️3)</button></div>'+
  '<div class="row"><button class="secondary" id="endKing" '+(p.cpu?'disabled':'')+'>End turn →</button><button class="secondary" id="newKing">New game</button></div>'+
  '<p style="color:var(--muted);text-align:center">Original Catan-inspired game: roll two dice, collect resources from matching tiles, trade 4 of one resource for 1 of another, and build. Roads cost 🌲1 🧱1; settlements cost one of each basic resource; cities cost 🌾2 ⛰️3. First to 7 points wins. CPU players take their own turns.</p>';
@@ -140,11 +140,25 @@ function buildKing(type){
 }
 function tradeKing(){
  let p=kingdomPlayers[kingdomTurn];if(!kingdomRolled||p.cpu)return;
- let give=prompt("Which resource do you have 4 of and want to trade? wood, brick, wheat, sheep, ore");
- if(!resources.includes(give)||p.res[give]<4){kingdomMsg="You need at least 4 of one resource to trade.";renderKingdom();return;}
+ let mode=prompt("Trade with whom? Type BANK for a 4:1 bank trade, or PLAYER for a 1:1 trade with another player.","BANK");
+ if(!mode)return;mode=mode.toUpperCase();
+ let give=prompt("Which resource are you offering? wood, brick, wheat, sheep, ore");
+ if(!resources.includes(give)||p.res[give]<1){kingdomMsg="You don't have that resource to offer.";renderKingdom();return;}
  let get=prompt("Which resource do you want in return? wood, brick, wheat, sheep, ore");
  if(!resources.includes(get)||get===give){kingdomMsg="Choose a different resource.";renderKingdom();return;}
- p.res[give]-=4;p.res[get]++;kingdomMsg="Traded 4 "+give+" for 1 "+get+".";renderKingdom();
+ if(mode==="BANK"){
+  if(p.res[give]<4){kingdomMsg="A bank trade requires 4 of the resource you're offering.";renderKingdom();return;}
+  p.res[give]-=4;p.res[get]++;kingdomMsg="Traded 4 "+give+" for 1 "+get+" with the bank.";
+ }else if(mode==="PLAYER"){
+  let others=kingdomPlayers.map((x,i)=>({x,i})).filter(o=>o.i!==kingdomTurn);
+  let choice=prompt("Trade with which player? "+others.map(o=>(o.i+1)+": "+o.x.name).join(", "));
+  let target=kingdomPlayers[+(choice||0)-1];
+  if(!target||target===p||target.res[get]<1){kingdomMsg="That player can't make the requested trade.";renderKingdom();return;}
+  let accept=target.cpu?(target.res[give]<3||target.res[get]>2):confirm(target.name+", accept 1 "+give+" for 1 "+get+"?");
+  if(!accept){kingdomMsg=target.name+" declined the trade.";renderKingdom();return;}
+  p.res[give]--;p.res[get]++;target.res[get]--;target.res[give]++;kingdomMsg="Trade completed with "+target.name+".";
+ }else{kingdomMsg="Choose BANK or PLAYER next time.";}
+ renderKingdom();
 }
 function cpuKingTurn(){
  let p=kingdomPlayers[kingdomTurn];if(!p||!p.cpu)return;
