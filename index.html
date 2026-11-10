@@ -64,8 +64,104 @@ would:[
 ],
 charades:["A penguin walking","A robot dancing","Brushing your teeth","A sneaky cat","A basketball player","A T-rex trying to clap","A person riding a roller coaster","A chef making pancakes","A superhero landing","A baby learning to walk"]
 };
+
+data.jokes.push(
+["Why did the scarecrow win an award?","Because he was outstanding in his field."],
+["Why did the golfer bring two pairs of pants?","In case he got a hole in one."],
+["What do you call a sleeping bull?","A bulldozer."],
+["Why did the cookie go to the doctor?","Because it was feeling crummy."],
+["What kind of tree fits in your hand?","A palm tree."],
+["Why are frogs so happy?","They eat whatever bugs them."],
+["What do you call a fish wearing a bow tie?","Sofishticated."],
+["Why did the computer go to the doctor?","It had a virus."],
+["What do you call an alligator in a vest?","An investigator."],
+["Why did the student eat his homework?","The teacher said it was a piece of cake."],
+["What did one wall say to the other wall?","I'll meet you at the corner."],
+["Why couldn't the pony sing?","It was a little hoarse."],
+["What do you call a dinosaur that crashes its car?","Tyrannosaurus wrecks."],
+["Why did the banana go to the doctor?","It wasn't peeling well."],
+["What has four wheels and flies?","A garbage truck."],
+["Why did the teddy bear skip dessert?","It was stuffed."],
+["What do you call a fake noodle?","An impasta."],
+["Why was the broom late?","It swept in."],
+["What did the ocean say to the beach?","Nothing, it just waved."],
+["Why don't eggs tell jokes?","They might crack each other up."],
+["What do you call a snowman in summer?","A puddle."],
+["Why did the music teacher need a ladder?","To reach the high notes."],
+["What kind of room has no doors or windows?","A mushroom."],
+["Why did the orange stop rolling?","It ran out of juice."],
+["What do you call a pile of cats?","A meowtain."],
+["Why was the math lecture so long?","The professor kept going off on a tangent."],
+["What do you call a bear caught in the rain?","A drizzly bear."],
+["Why did the picture go to jail?","It was framed."],
+["What did the left eye say to the right eye?","Between us, something smells."],
+["Why are elevator jokes so good?","They work on many levels."],
+["What do you call a belt made of watches?","A waist of time."],
+["Why did the tomato blush?","It saw the salad dressing."],
+["What do you call a cow with no legs?","Ground beef."],
+["Why did the bicycle need a rest?","It was exhausted."],
+["What did the zero say to the eight?","Nice belt!"]
+);
+data.riddles.push(
+["What has to be broken before you can use it?","An egg."],
+["What has many teeth but cannot bite?","A comb."],
+["What can travel around the world while staying in one corner?","A postage stamp."],
+["What has a neck but no head?","A bottle."],
+["What has hands but cannot clap?","A clock."],
+["What can you catch but not throw?","A cold."],
+["What has cities but no houses, forests but no trees, and rivers but no water?","A map."],
+["What belongs to you but other people use it more than you do?","Your name."],
+["What has one head, one foot, and four legs?","A bed."],
+["What gets bigger the more you take away?","A hole."],
+["What is full of holes but still holds water?","A sponge."],
+["What has words but never speaks?","A book."],
+["What runs but never walks, has a bed but never sleeps?","A river."],
+["What goes through towns and over hills but never moves?","A road."],
+["What has an end but no beginning, a home but no family?","A letter."],
+["What can fill a room but takes up no space?","Light."],
+["What has branches but no fruit, trunk, or leaves?","A bank."],
+["What has 13 hearts but no other organs?","A deck of cards."],
+["What kind of band never plays music?","A rubber band."],
+["What comes once in a minute, twice in a moment, but never in a thousand years?","The letter M."],
+["What is always in front of you but can't be seen?","The future."],
+["What has a thumb and four fingers but is not alive?","A glove."],
+["What can you hold without ever touching it?","Your breath."],
+["What has lots of eyes but cannot see?","A potato."],
+["What building has the most stories?","A library."],
+["What has a bottom at the top?","Your legs."],
+["What kind of coat is always wet when you put it on?","A coat of paint."],
+["What begins with T, ends with T, and has T inside?","A teapot."],
+["What has four fingers and a thumb but isn't a hand?","A mitten."],
+["What gets sharper the more you use it?","Your brain."],
+["What has no life but can die?","A battery."],
+["What has a ring but no finger?","A telephone."],
+["What can you serve but never eat?","A tennis ball."],
+["What has a head and a tail but no body?","A coin."],
+["What is easy to lift but hard to throw?","A feather."],
+["What has an eye at the center but cannot see?","A hurricane."]
+);
+function shuffledIndexes(kind){
+ const list=data[kind].map((_,i)=>i);
+ for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
+ return list;
+}
+function drawUnique(kind){
+ const bagKey="familyFunBag_"+kind,lastKey="familyFunLast_"+kind;
+ let bag=[],last=null;
+ try{bag=JSON.parse(localStorage.getItem(bagKey)||"[]");last=localStorage.getItem(lastKey);}catch(e){}
+ if(!Array.isArray(bag))bag=[];
+ bag=bag.filter(i=>Number.isInteger(i)&&i>=0&&i<data[kind].length);
+ if(!bag.length){
+  bag=shuffledIndexes(kind);
+  if(bag.length>1&&String(bag[bag.length-1])===last)[bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];
+ }
+ const picked=bag.pop();
+ try{localStorage.setItem(bagKey,JSON.stringify(bag));localStorage.setItem(lastKey,String(picked));}catch(e){}
+ return {item:data[kind][picked],remaining:bag.length,total:data[kind].length};
+}
+
 function show(g){game=g;idx=0;score=0;answered=false;$("#home").style.display="none";$("#play").classList.add("active");$("#next").style.display=["war","gofish","crazy","kingdom"].includes(g)?"none":"";$("#gameTitle").textContent=({jokes:"😂 Joke Time",riddles:"🕵️ Riddles",trivia:"🌎 Trivia",memory:"🧩 Memory Match",would:"🤔 Would You Rather?",charades:"🎭 Charades",war:"🃏 War",gofish:"🐟 Go Fish",crazy:"♠️ Crazy Eights",kingdom:"🏝️ Kingdom Builders"})[g];if(g==="memory")startMemory();else render();}
-function render(){let a=$("#gameArea");if(game==="jokes"||game==="riddles"){let item=data[game][idx%data[game].length];a.innerHTML='<div class="score">'+(idx+1)+' / '+data[game].length+'</div><div class="prompt">'+item[0]+'</div><div class="feedback" id="reveal">Answer stays hidden until you are ready.</div><div class="row"><button class="secondary" id="peek">Reveal answer</button><button id="advance">Next one</button></div>';$("#peek").onclick=()=>{$("#reveal").textContent=item[1];$("#peek").disabled=true;};$("#advance").onclick=()=>{idx++;render();};}
+function render(){let a=$("#gameArea");if(game==="jokes"||game==="riddles"){let draw=drawUnique(game),item=draw.item;a.innerHTML='<div class="score">Random pick · '+(draw.total-draw.remaining)+' of '+draw.total+' in this round used</div><div class="prompt">'+item[0]+'</div><div class="feedback" id="reveal">Answer stays hidden until you are ready.</div><div class="row"><button class="secondary" id="peek">Reveal answer</button><button id="advance">Next random one</button></div><p style="text-align:center;color:var(--muted);font-size:13px">'+draw.remaining+' unique ones left before the list reshuffles. No repeats until the whole list has been used.</p>';$("#peek").onclick=()=>{$("#reveal").textContent=item[1];$("#peek").disabled=true;};$("#advance").onclick=()=>{idx++;render();};}
 else if(game==="trivia"){let q=data.trivia[idx%data.trivia.length];a.innerHTML='<div class="score">Score: '+score+' · Question '+(idx+1)+' / '+data.trivia.length+'</div><div class="prompt">'+q[0]+'</div><div class="answers">'+q[1].map((x,i)=>'<button data-i="'+i+'">'+x+'</button>').join('')+'</div><div class="feedback" id="feedback"></div><div class="row"><button id="advance" disabled>Next question</button></div>';a.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{if(answered)return;answered=true;let ok=+b.dataset.i===q[2];if(ok)score++;a.querySelectorAll('[data-i]').forEach((x,i)=>{x.disabled=true;if(i===q[2])x.classList.add('good');else if(x===b)x.classList.add('bad');});$("#feedback").textContent=ok?"Correct! 🎉":"Not quite — the answer is "+q[1][q[2]]+".";$("#advance").disabled=false;});$("#advance").onclick=()=>{idx++;if(idx>=data.trivia.length){a.innerHTML='<div class="prompt">Final score: '+score+' / '+data.trivia.length+' 🏆</div><div class="row"><button id="again">Play again</button></div>';$("#again").onclick=()=>{idx=0;score=0;render();};}else render();};}
 else if(game==="would"){a.innerHTML='<div class="score">Question '+(idx+1)+' / '+data.would.length+'</div><div class="prompt">'+data.would[idx%data.would.length][0]+'</div><p style="text-align:center;color:var(--muted)">Everyone chooses a side, then tell the group why!</p><div class="row"><button id="advance">Next question</button></div>';$("#advance").onclick=()=>{idx++;render();};}
 
