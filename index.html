@@ -105,7 +105,7 @@ function pay(cost){if(!Object.entries(cost).every(([r,n])=>p.res[r]>=n))return f
 function buildKing(cost,success){if(!kingdomRolled){kingdomMsg='Roll the dice before building.';renderKingdom();return;}if(pay(cost)){success();kingdomMsg=p.points>=7?p.name+' reaches 7 points and wins! 🏆':'Built successfully!';}else kingdomMsg='Not enough resources for that build.';renderKingdom();}
 $("#roadKing").onclick=()=>buildKing(buildCosts.road,()=>{p.roads++;});
 $("#settleKing").onclick=()=>buildKing(buildCosts.settlement,()=>{p.points++;p.settlements++;});
-$("#cityKing").onclick=()=>buildKing(buildCosts.city,()=>{if(p.settlements<=p.cities){Object.entries(buildCosts.city).forEach(([r,n])=>p.res[r]+=n);kingdomMsg='You need an unupgraded settlement first.';}else p.cities++;if(p.settlements>p.cities-1)p.points++;});
+$("#cityKing").onclick=()=>{if(!kingdomRolled){kingdomMsg="Roll the dice before building.";renderKingdom();return;}if(p.settlements<=p.cities){kingdomMsg="You need an unupgraded settlement first.";renderKingdom();return;}if(pay(buildCosts.city)){p.cities++;p.points++;kingdomMsg=p.points>=7?p.name+" reaches 7 points and wins! 🏆":"City upgraded! +1 point.";}else kingdomMsg="Not enough resources for a city.";renderKingdom();};
 $("#endKing").onclick=()=>{if(p.points>=7){kingdomMsg=p.name+' wins the game! 🏆';renderKingdom();return;}kingdomTurn=(kingdomTurn+1)%kingdomPlayers.length;if(kingdomTurn===0)kingdomRound++;kingdomRolled=false;kingdomMsg='Next player: roll the dice to begin your turn.';renderKingdom();};}
 
 $("#back").onclick=()=>{$("#play").classList.remove("active");$("#home").style.display="grid";game='';};$("#next").onclick=()=>{if(game==="memory")startMemory();else{idx++;render();}};
