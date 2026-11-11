@@ -72,4 +72,4 @@ document.querySelectorAll('[data-dir]').forEach(b=>{let d=b.dataset.dir,vec={up:
 window.addEventListener('keydown',e=>{let d={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]}[e.key];if(d){e.preventDefault();move(...d)}if(e.key===' '||e.key==='Enter')interact()});
 $('#interact').onclick=interact;$('#bag').onclick=showBag;$('#dex').onclick=showDex;$('#heal').onclick=()=>{state.team.forEach(m=>m.hp=m.max);renderTeam();say('Your team is fully rested!')};$('#mapBtn').onclick=showMap;$('#helpBtn').onclick=help;$('#saveBtn').onclick=()=>save();$('#menuBtn').onclick=menu;
 load();renderTeam();draw();if(!state.team.length)starter();
-</script></body></html>
+</script><script src="./wildbound-extra.js"></script></body></html>
