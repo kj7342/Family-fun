@@ -25,7 +25,7 @@ const oldWin=winBattle;winBattle=function(){let p=state.team[battle.active],oldL
 maps.forest.gate2={x:18,y:10,to:'emberpeak',tx:2,ty:6};
 maps.emberpeak={name:'Emberpeak Island',emoji:'🌋',base:'#bd8060',blocks:[[0,0,20,1],[0,13,20,1],[0,0,1,14],[19,0,1,14],[4,2,2,3],[13,2,3,2],[5,9,3,2],[14,9,2,3]],grass:[[2,2,2,3],[8,3,4,2],[12,7,5,3]],npc:[{x:10,y:6,kind:'gym'}],gate:{x:1,y:6,to:'forest',tx:17,ty:10}};
 const oldInteract=interact;interact=function(){let n=maps[state.map].npc.find(n=>Math.abs(n.x-state.x)+Math.abs(n.y-state.y)<=1);if(n&&n.kind==='gym'){dialog('<h2>🏟️ Emberpeak Gym</h2><p>Gym Leader Sol guards the Flame Crest. This is a tougher challenge—bring a healthy team!</p><button class="primary" id="gymGo">Challenge the Gym!</button>');$('#gymGo').onclick=()=>{close();startBattle(makeMon('solarbear',12),true,'gym')};return}oldInteract()};
-const oldStart=startBattle;startBattle=function(w,b,t){oldStart(w,b,t)};
+const oldStart=startBattle;startBattle=function(w,b,t){oldStart(w,b,t);if(battle)battle.bossType=t||'ranger'};
 const oldShowMap=showMap;showMap=function(){oldShowMap();$('#dialog').insertAdjacentHTML('afterbegin','<p>🌋 <b>Emberpeak Island</b> — a volcanic route and the Emberpeak Gym. Reach it through the eastern edge of Whispering Woods.</p>')};
 const oldHelp=help;help=function(){oldHelp();$('#dialog').insertAdjacentHTML('beforeend','<p><b>Evolution:</b> Some creatures evolve at level 10. Keep training your companions!</p><p><b>Sound:</b> Tap the Sound button to turn on the original chiptune soundtrack and battle effects.</p>')};
 const oldSave=save;save=function(show=true){oldSave(show);};
